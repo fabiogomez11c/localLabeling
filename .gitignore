@@ -4,3 +4,6 @@
 data/
 crop_images/
 downloads/
+images/
+src/images/
+**/*.h5

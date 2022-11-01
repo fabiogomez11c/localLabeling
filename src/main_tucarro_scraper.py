@@ -21,8 +21,13 @@ assert len(driver.window_handles) == 1
 
 # accept cookies
 driver.find_element(By.CLASS_NAME, 'nav-new-cookie-disclaimer__button').click()
+driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next').click()
 
 for h in range(40):
+    try:
+        driver.find_element(By.CLASS_NAME, 'cookie-consent-banner-opt-out__action').click()
+    except:
+        pass
     box = driver.find_elements(By.CLASS_NAME, 'ui-search-result__wrapper')
     next_button = driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next')
     for idx, element in enumerate(box):
