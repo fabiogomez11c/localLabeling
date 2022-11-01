@@ -19,11 +19,12 @@ original_window = driver.current_window_handle
 # Check we don't have other windows open already
 assert len(driver.window_handles) == 1
 
-# Finding the search box
-box = driver.find_elements(By.CLASS_NAME, 'ui-search-result__wrapper')
-next_button = driver.find_element(By.CLASS_NAME, 'andes-pagination__link')
+# accept cookies
+driver.find_element(By.CLASS_NAME, 'nav-new-cookie-disclaimer__button').click()
 
 for h in range(40):
+    box = driver.find_elements(By.CLASS_NAME, 'ui-search-result__wrapper')
+    next_button = driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next')
     for idx, element in enumerate(box):
         print(f'Element {idx} in page {h}')
         element.click()
