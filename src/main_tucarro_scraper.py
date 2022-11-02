@@ -1,11 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
+import uuid
 import time
 
 chrome_options = Options()
@@ -20,8 +21,9 @@ original_window = driver.current_window_handle
 assert len(driver.window_handles) == 1
 
 # accept cookies
+name_id = 1
 driver.find_element(By.CLASS_NAME, 'nav-new-cookie-disclaimer__button').click()
-driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next').click()
+# driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next').click()
 
 for h in range(40):
     try:
@@ -30,6 +32,10 @@ for h in range(40):
         pass
     box = driver.find_elements(By.CLASS_NAME, 'ui-search-result__wrapper')
     next_button = driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next')
+    if h < 28:
+        next_button.click()
+        time.sleep(5)
+        continue
     for idx, element in enumerate(box):
         print(f'Element {idx} in page {h}')
         element.click()
@@ -39,23 +45,30 @@ for h in range(40):
         window_handle = driver.window_handles[1]
         driver.switch_to.window(window_handle)
         try:
-            time.sleep(4)
-            driver.find_element(By.CLASS_NAME, 'ui-pdp-gallery__see-more').click()
-            time.sleep(4)
-        except ElementClickInterceptedException or NoSuchElementException:
+            try:
+                time.sleep(4)
+                driver.find_element(By.CLASS_NAME, 'ui-pdp-gallery__see-more').click()
+                time.sleep(4)
+            except ElementClickInterceptedException or NoSuchElementException:
+                driver.close()
+                driver.switch_to.window(original_window)
+                continue
+            picture = driver.find_element(By.CLASS_NAME, 'pswp__img')
+            # go back 7 pictures
+            for i in range(6):
+                driver.find_element(By.CLASS_NAME, 'pswp__button--arrow--left').click()
+                time.sleep(1)
+            # take screenshots of the next 12 pictures
+            for i in range(11):
+                driver.save_screenshot('downloads/car_' + str(uuid.uuid1()) + '.png')
+                name_id += 1
+                driver.find_element(By.CLASS_NAME, 'pswp__button--arrow--right').click()
+                time.sleep(1)
+        except:
             driver.close()
             driver.switch_to.window(original_window)
+            print(f'Error with element {idx} in page {h}')
             continue
-        picture = driver.find_element(By.CLASS_NAME, 'pswp__img')
-        # go back 7 pictures
-        for i in range(6):
-            driver.find_element(By.CLASS_NAME, 'pswp__button--arrow--left').click()
-            time.sleep(1)
-        # take screenshots of the next 12 pictures
-        for i in range(11):
-            driver.save_screenshot('downloads/car_' + str(idx) + 'pic_' + str(i) + '.png')
-            driver.find_element(By.CLASS_NAME, 'pswp__button--arrow--right').click()
-            time.sleep(1)
         driver.close()
         driver.switch_to.window(original_window)
     next_button.click()

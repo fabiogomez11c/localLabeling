@@ -5,22 +5,23 @@ import numpy as np
 
 if __name__ == '__main__':
   model = tf.keras.models.load_model('./src/labeling_model.h5')
-  labels = ['back', 'front', 'neither']
+  labels = ['back', 'front', 'other']
 
   files = glob.glob('./src/crop_images/*.png')
 
   # test model prediction
   for idx, image_filename in enumerate(files):
-    # image_filename = './images/back/22.png'
+    name_file = image_filename.split('/')[-1]
     img = tf.keras.preprocessing.image.load_img(image_filename, target_size=(256, 256))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
     pred = model.predict(img_array.reshape(1, 256, 256, 3))
     label_pred = labels[np.argmax(pred)]
 
-    new_path = './src/images/' + label_pred + '/' + str(idx) + '.png'
+    new_path = './src/images/' + label_pred + '/' + name_file
 
     # copy image to new folder
     shutil.copy(image_filename, new_path)
-    breakpoint()
+
+    print(f'Image {image_filename} predicted as {label_pred}. {len(files) - idx} images left.')
 
 
