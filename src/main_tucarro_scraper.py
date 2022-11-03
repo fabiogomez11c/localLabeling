@@ -32,10 +32,6 @@ for h in range(40):
         pass
     box = driver.find_elements(By.CLASS_NAME, 'ui-search-result__wrapper')
     next_button = driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next')
-    if h < 28:
-        next_button.click()
-        time.sleep(5)
-        continue
     for idx, element in enumerate(box):
         print(f'Element {idx} in page {h}')
         element.click()

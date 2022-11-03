@@ -15,15 +15,14 @@ for idx, element in enumerate(images_files):
     width, height = im.size
 
     # Setting the points for cropped image
-    left = width * 0.01
-    top = height * 0.01
-    right = width * 0.99
-    bottom = height * 0.99
+    left = width * 0.1
+    top = height * 0.1
+    right = width * 0.9
+    bottom = height * 0.9
 
     # Cropped image of above dimension
     im1 = im.crop((left, top, right, bottom))
-    breakpoint()
-    im1.save('crop_images_2/' + im_name)
+    im1.save('crop_images/' + im_name)
 
     print(f'{len(images_files) - idx - 1} left.')
 

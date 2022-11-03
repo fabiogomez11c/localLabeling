@@ -13,7 +13,7 @@ if __name__ == '__main__':
   for idx, image_filename in enumerate(files):
     name_file = image_filename.split('/')[-1]
     img = tf.keras.preprocessing.image.load_img(image_filename, target_size=(256, 256))
-    img_array = tf.keras.preprocessing.image.img_to_array(img)
+    img_array = tf.keras.preprocessing.image.img_to_array(img) / 255.0
     pred = model.predict(img_array.reshape(1, 256, 256, 3))
     label_pred = labels[np.argmax(pred)]
 
