@@ -3,7 +3,7 @@ import glob
 
 # all files
 # images_files = glob.glob("downloads/*.png")
-images_files = glob.glob("downloads/*.png")
+images_files = glob.glob("src/downloads/*.png")
 
 for idx, element in enumerate(images_files):
     # Opens a image in RGB mode
@@ -22,7 +22,7 @@ for idx, element in enumerate(images_files):
 
     # Cropped image of above dimension
     im1 = im.crop((left, top, right, bottom))
-    im1.save('crop_images/' + im_name)
+    im1.save('src/crop_images/' + im_name)
 
     print(f'{len(images_files) - idx - 1} left.')
 
