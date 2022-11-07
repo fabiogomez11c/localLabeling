@@ -7,7 +7,7 @@ if __name__ == '__main__':
   model = tf.keras.models.load_model('./src/labeling_model.h5')
   labels = ['back', 'front', 'other']
 
-  files = glob.glob('./src/crop_images/*.png')
+  files = glob.glob('./src/downloads2/*.png')
 
   # test model prediction
   for idx, image_filename in enumerate(files):

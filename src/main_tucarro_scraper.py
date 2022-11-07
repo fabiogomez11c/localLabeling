@@ -8,25 +8,18 @@ import numpy as np
 import uuid
 import time
 
-# chrome_options = Options()
-# chrome_options.add_experimental_option("detach", True)
-# service = Service(executable_path=ChromeDriverManager().install())
-# driver = webdriver.Chrome(service=service, options=chrome_options)
 driver = webdriver.Chrome()
 wait = WebDriverWait(driver, 10)
-driver.get('https://carros.tucarro.com.co/#unapplied_filter_id%3DMODEL%26unapplied_filter_name%3DModelo%26unapplied_value_id%3D68141%26unapplied_value_name%3DCaptiva%26unapplied_autoselect%3Dfalse')
+# driver.get('https://carros.tucarro.com.co/#unapplied_filter_id%3DMODEL%26unapplied_filter_name%3DModelo%26unapplied_value_id%3D68141%26unapplied_value_name%3DCaptiva%26unapplied_autoselect%3Dfalse')
+driver.get('https://carros.tucarro.com.co/')
 # Store the ID of the original window
 original_window = driver.current_window_handle
 # Check we don't have other windows open already
 assert len(driver.window_handles) == 1
 
-# create array with urls
-urls = np.array([])
-
 # accept cookies
 name_id = 1
 driver.find_element(By.CLASS_NAME, 'nav-new-cookie-disclaimer__button').click()
-# driver.find_element(By.CLASS_NAME, 'andes-pagination__button--next').click()
 
 for h in range(40):
     try:
@@ -46,13 +39,12 @@ for h in range(40):
         try:
             time.sleep(5)
             to_include = '-F.webp'
+            to_include_2 = 'D_NQ_NP_2X'
             tic = time.time()
-            list_urls = [i.url for i in driver.requests if i.response and to_include in i.url and i.response.headers['Content-Type'] == 'image/webp' and i.url not in urls]
-            print('Time to get urls: ', time.time() - tic)
+            list_urls = [i.url for i in driver.requests if i.response and to_include in i.url and to_include_2 in i.url and i.response.headers['Content-Type'] == 'image/webp']
             list_urls = np.unique(np.array(list_urls))
-            urls = np.append(urls, list_urls)
             for request in list_urls:
-                urllib.request.urlretrieve(request, 'src/downloads2/car_' + str(uuid.uuid1()) + '.png')
+                urllib.request.urlretrieve(request, 'src/downloads/car_' + str(uuid.uuid1()) + '.png')
                 time.sleep(1)
                 print(f'Downloaded {request}')
         except:
@@ -62,6 +54,7 @@ for h in range(40):
             continue
         driver.close()
         driver.switch_to.window(original_window)
+        del driver.requests
     next_button.click()
     time.sleep(5)
 
