@@ -9,3 +9,5 @@ downloads copy/
 images/
 src/images/
 **/*.h5
+train/
+validation/
