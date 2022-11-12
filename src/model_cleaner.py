@@ -4,8 +4,8 @@ import tensorflow as tf
 import numpy as np
 
 if __name__ == '__main__':
-  model = tf.keras.models.load_model('./src/labeling_model.h5')
-  labels = ['back', 'front', 'other']
+  model = tf.keras.models.load_model('./src/labeling_model_ic.h5')
+  labels = ['other', 'correct']
 
   files = glob.glob('./src/downloads/*.png')
   # files_to_use = np.random.choice(files, 10000, replace=False)
@@ -17,16 +17,14 @@ if __name__ == '__main__':
     img = tf.keras.preprocessing.image.load_img(image_filename, target_size=(256, 256))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
     pred = model.predict(img_array.reshape(1, 256, 256, 3))
-    thresholld = 0.6
+    thresholld = 0.95
     idx_pred = None
-    if pred[0][0] > thresholld:
-      idx_pred = 0
-    elif pred[0][1] > thresholld:
+    if pred > thresholld:
       idx_pred = 1
     else:
-      idx_pred = 2
+      idx_pred = 0
     
-    label_pred = labels[np.argmax(pred)]
+    label_pred = labels[idx_pred]
 
     new_path = './src/images/' + label_pred + '/' + name_file
 
