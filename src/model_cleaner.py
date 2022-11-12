@@ -8,7 +8,8 @@ if __name__ == '__main__':
   labels = ['back', 'front', 'other']
 
   files = glob.glob('./src/downloads/*.png')
-  files_to_use = np.random.choice(files, 4000, replace=False)
+  # files_to_use = np.random.choice(files, 10000, replace=False)
+  files_to_use = files
 
   # test model prediction
   for idx, image_filename in enumerate(files_to_use):
@@ -16,11 +17,11 @@ if __name__ == '__main__':
     img = tf.keras.preprocessing.image.load_img(image_filename, target_size=(256, 256))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
     pred = model.predict(img_array.reshape(1, 256, 256, 3))
-    thresholld = 0.7
+    thresholld = 0.6
     idx_pred = None
-    if pred[0] > thresholld:
+    if pred[0][0] > thresholld:
       idx_pred = 0
-    elif pred[1] > thresholld:
+    elif pred[0][1] > thresholld:
       idx_pred = 1
     else:
       idx_pred = 2
