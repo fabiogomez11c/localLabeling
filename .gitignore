@@ -11,3 +11,5 @@ src/images/
 **/*.h5
 train/
 validation/
+images.zip
+src/carrr.jpeg
