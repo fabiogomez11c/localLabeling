@@ -38,8 +38,8 @@ for h in range(40):
         driver.switch_to.window(window_handle)
         try:
             time.sleep(5)
-            to_include = '-F.webp'
-            to_include_2 = 'D_NQ_NP_2X'
+            to_include = '-O.webp'
+            to_include_2 = 'D_NQ_NP_'
             tic = time.time()
             list_urls = [i.url for i in driver.requests if i.response and to_include in i.url and to_include_2 in i.url and i.response.headers['Content-Type'] == 'image/webp']
             list_urls = np.unique(np.array(list_urls))
