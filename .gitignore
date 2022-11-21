@@ -8,6 +8,7 @@ downloads2/
 downloads copy/
 images/
 src/images/
+src/models/
 **/*.h5
 train/
 validation/
