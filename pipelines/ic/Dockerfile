@@ -6,5 +6,4 @@ COPY . .
 
 # RUN pip install -r requirements.txt
 
-# ENTRYPOINT ['python', '-m', 'trainer.train']
-RUN pip list
+ENTRYPOINT ["python", "-m", "trainer.task"]
