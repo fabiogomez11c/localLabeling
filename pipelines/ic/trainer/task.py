@@ -15,7 +15,27 @@ download_images('gs://mom_seguros_images_car/ic/', 'ic/')
 
 # create the dataset
 logging.info(f'Creating datasets for training')
-
+train_ds = tf.keras.utils.image_dataset_from_directory(
+  'ic/train',
+  class_names=CLASS_NAMES,
+  seed=123,
+  image_size=IMAGE_SIZE,
+  batch_size=BATCH_SIZE
+)
+val_ds = tf.keras.utils.image_dataset_from_directory(
+  'ic/validation',
+  class_names=CLASS_NAMES,
+  shuffle=False,
+  image_size=IMAGE_SIZE,
+  batch_size=BATCH_SIZE
+)
+test_ds = tf.keras.utils.image_dataset_from_directory(
+  'ic/test',
+  class_names=CLASS_NAMES,
+  shuffle=False,
+  image_size=IMAGE_SIZE,
+  batch_size=BATCH_SIZE
+)     
 
 # create and compile the model
 
