@@ -1,4 +1,5 @@
 import logging
+import os
 import tensorflow as tf
 
 from get_images import download_images
@@ -7,6 +8,9 @@ BATCH_SIZE = 32
 IMAGE_SIZE = (256, 256)
 CLASS_NAMES = ['incorrect', 'correct']
 AUTOTUNE = tf.data.AUTOTUNE
+REGULARIZATION_LAMBDA = 0.000025
+
+output_directory = os.environ['API_MODEL_DIR']
 
 logging.info(f'List GPUs: {tf.config.list_physical_devices("GPU")}')
 
@@ -41,9 +45,27 @@ val_ds = val_ds.prefetch(AUTOTUNE)
 
 # create and compile the model
 logging.info('Creating and compiling the model')
+model = tf.keras.Sequential([
+  tf.keras.layers.Rescaling(1./255, input_shape=(256, 256, 3)),
+  tf.keras.layers.Dense(64, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1, activation='sigmoid')
+])
+model.compile(
+  loss='binary_crossentropy',
+  optimizer=tf.optimizers.SGD(learning_rate=0.01),
+  metrics=['accuracy'],
+)
 
 # train the model
+model.fit(
+  train_ds,
+  epochs=5,
+  verbose=1,
+  validation_data=val_ds,
+)
 
+# model save
+model.save(output_directory)
 
 
 
