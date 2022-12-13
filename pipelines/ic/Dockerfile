@@ -4,6 +4,9 @@ WORKDIR /
 
 COPY . .
 
-# RUN pip install -r requirements.txt
+# for debugging - shouldn't go to pipelines
+RUN sudo apt-get install vim
+
+RUN pip install google-cloud-storage
 
 ENTRYPOINT ["python", "-m", "trainer.task"]
