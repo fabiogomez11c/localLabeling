@@ -25,7 +25,7 @@ logging.info(f'List GPUs: {tf.config.list_physical_devices("GPU")}')
 
 # get images
 logging.info('Downloading images')
-download_images('gs://mom_seguros_images_car/ic/', 'ic/')
+download_images('gs://mom_seguros_images_car/ic', '.')
 
 # create the dataset
 logging.info(f'Creating datasets for training')
