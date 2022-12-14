@@ -15,3 +15,5 @@ validation/
 images.zip
 src/carrr.jpeg
 **/__pycache__
+dist/
+trainer.egg-info/
