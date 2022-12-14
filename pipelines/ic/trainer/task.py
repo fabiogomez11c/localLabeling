@@ -1,8 +1,17 @@
 import logging
 import os
 import tensorflow as tf
+from subprocess import run
 
-from get_images import download_images
+def download_images(copy_from_path, copy_to_path):
+    """
+    Copy folder from one path to another path, it uses gsutil cli.
+    """
+    return_obj = run(['gsutil', '-m', 'cp', '-r', copy_from_path, copy_to_path])
+    if return_obj.returncode == 0:
+        logging.info('Images downloaded correctly')
+    else:
+        logging.error('Error dowloading images')
 
 BATCH_SIZE = 32
 IMAGE_SIZE = (256, 256)
@@ -10,7 +19,7 @@ CLASS_NAMES = ['incorrect', 'correct']
 AUTOTUNE = tf.data.AUTOTUNE
 REGULARIZATION_LAMBDA = 0.000025
 
-output_directory = os.environ['API_MODEL_DIR']
+output_directory = os.environ['AIP_MODEL_DIR']
 
 logging.info(f'List GPUs: {tf.config.list_physical_devices("GPU")}')
 

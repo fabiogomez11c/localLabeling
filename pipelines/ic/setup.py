@@ -5,7 +5,7 @@ REQUIRED_PACKAGES = ['google-cloud-storage']
 
 setup(
     name='trainer',
-    version='0.1',
+    version='0.2',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
     include_package_data=True,
