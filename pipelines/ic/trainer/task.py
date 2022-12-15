@@ -3,59 +3,95 @@ import os
 import tensorflow as tf
 from subprocess import run
 
-def download_images(copy_from_path, copy_to_path):
-    """
-    Copy folder from one path to another path, it uses gsutil cli.
-    """
-    return_obj = run(['gsutil', '-m', 'cp', '-r', copy_from_path, copy_to_path])
-    if return_obj.returncode == 0:
-        logging.info('Images downloaded correctly')
-    else:
-        logging.error('Error dowloading images')
-
 BATCH_SIZE = 32
 IMAGE_SIZE = (256, 256)
 CLASS_NAMES = ['incorrect', 'correct']
 AUTOTUNE = tf.data.AUTOTUNE
 REGULARIZATION_LAMBDA = 0.000025
+FILENAMES = "gs://mom_seguros_images_car/ic/train/train/*/*.png"
+MAIN_FIELPATH = "gs://mom_seguros_images_car/ic/train/train/*"
 
 output_directory = os.environ['AIP_MODEL_DIR']
+
+# List all files in bucket
+filepath = tf.io.gfile.glob(FILENAMES)
+NUM_TOTAL_IMAGES = len(filepath)
+
+def assign_label(label_map: dict, filepath: list) -> dict:
+    labels = dict()
+
+    for i in range(len(filepath)):
+        label = filepath[i].split('/')[-2]
+        if label not in list(label_map.keys()):
+            raise NotImplementedError(f'Label {label} not included in label map')
+        
+        labels.update({filepath[i]:label_map[label]})
+
+    return labels
+
+def get_bytes_label(filepath, label):
+    raw_bytes = tf.io.read_file(filepath)
+    return raw_bytes, label
+
+def process_image(raw_bytes, label):
+    image = tf.io.decode_png(raw_bytes, channels=3)
+    image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+    image = tf.image.resize(image, (256, 256)) # needed in order to have correct shape otherwise it gets None shape in training
+    
+    return image, label
+
+def build_dataset(dataset, batch_size=BATCH_SIZE, cache=False):
+    
+    dataset = dataset.shuffle(NUM_TOTAL_IMAGES)
+    
+    # Extraction: IO Intensive
+    dataset = dataset.map(get_bytes_label, num_parallel_calls=AUTOTUNE)
+
+    # Transformation: CPU Intensive
+    dataset = dataset.map(process_image, num_parallel_calls=AUTOTUNE)
+    # dataset = dataset.repeat()
+    dataset = dataset.batch(batch_size=batch_size)
+    
+    if cache:
+        if isinstance(cache, str):
+            dataset = dataset.cache(filename=cache)
+        else:
+            dataset = dataset.cache()
+    
+    # Pipeline next iteration
+    dataset = dataset.prefetch(buffer_size=AUTOTUNE)
+    
+    return dataset
 
 logging.info(f'List GPUs: {tf.config.list_physical_devices("GPU")}')
 
 # get images
-logging.info('Downloading images')
-download_images('gs://mom_seguros_images_car/ic', '.')
+logging.info('Images pipeline starting')
+logging.info('Creating dataset with gcs paths')
+label_map = {'correct': 1, 'incorrect': 0}
+dataset = assign_label(label_map, filepath)
+dataset = [[k,v] for k,v in dataset.items()]
 
-# create the dataset
+features = [i[0] for i in dataset]
+labels = [i[1] for i in dataset]
+
+# Create Dataset from Features and Labels
+dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+
 logging.info(f'Creating datasets for training')
-train_ds = tf.keras.utils.image_dataset_from_directory(
-  'ic/train/train',
-  class_names=CLASS_NAMES,
-  seed=123,
-  image_size=IMAGE_SIZE,
-  batch_size=BATCH_SIZE
-)
-# val_ds = tf.keras.utils.image_dataset_from_directory(
-#   'ic/validation',
-#   class_names=CLASS_NAMES,
-#   shuffle=False,
-#   image_size=IMAGE_SIZE,
-#   batch_size=BATCH_SIZE
-# )
+# Apply transformations to the dataset with images paths and labels
+train_ds = build_dataset(dataset)
+
 # data augmentation layer
 data_augmentation = tf.keras.Sequential([
   tf.keras.layers.RandomFlip("horizontal_and_vertical"),
   tf.keras.layers.RandomRotation(0.2),
 ])
 
-train_ds = train_ds.prefetch(AUTOTUNE)
-# val_ds = val_ds.prefetch(AUTOTUNE)
-
 # create and compile the model
 logging.info('Creating and compiling the model')
 model = tf.keras.Sequential([
-  tf.keras.layers.Rescaling(1./255, input_shape=(256, 256, 3)),
+  data_augmentation,
   tf.keras.layers.Dense(64, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
   tf.keras.layers.Dense(1, activation='sigmoid')
 ])
