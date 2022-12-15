@@ -92,6 +92,7 @@ data_augmentation = tf.keras.Sequential([
 logging.info('Creating and compiling the model')
 model = tf.keras.Sequential([
   data_augmentation,
+  tf.keras.layers.Flatten(),
   tf.keras.layers.Dense(64, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
   tf.keras.layers.Dense(1, activation='sigmoid')
 ])
