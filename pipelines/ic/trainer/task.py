@@ -30,19 +30,19 @@ download_images('gs://mom_seguros_images_car/ic', '.')
 # create the dataset
 logging.info(f'Creating datasets for training')
 train_ds = tf.keras.utils.image_dataset_from_directory(
-  'ic/train',
+  'ic/train/train',
   class_names=CLASS_NAMES,
   seed=123,
   image_size=IMAGE_SIZE,
   batch_size=BATCH_SIZE
 )
-val_ds = tf.keras.utils.image_dataset_from_directory(
-  'ic/validation',
-  class_names=CLASS_NAMES,
-  shuffle=False,
-  image_size=IMAGE_SIZE,
-  batch_size=BATCH_SIZE
-)
+# val_ds = tf.keras.utils.image_dataset_from_directory(
+#   'ic/validation',
+#   class_names=CLASS_NAMES,
+#   shuffle=False,
+#   image_size=IMAGE_SIZE,
+#   batch_size=BATCH_SIZE
+# )
 # data augmentation layer
 data_augmentation = tf.keras.Sequential([
   tf.keras.layers.RandomFlip("horizontal_and_vertical"),
@@ -50,7 +50,7 @@ data_augmentation = tf.keras.Sequential([
 ])
 
 train_ds = train_ds.prefetch(AUTOTUNE)
-val_ds = val_ds.prefetch(AUTOTUNE)
+# val_ds = val_ds.prefetch(AUTOTUNE)
 
 # create and compile the model
 logging.info('Creating and compiling the model')
@@ -70,7 +70,7 @@ model.fit(
   train_ds,
   epochs=5,
   verbose=1,
-  validation_data=val_ds,
+  # validation_data=val_ds,
 )
 
 # model save
