@@ -4,7 +4,7 @@ import tensorflow as tf
 from subprocess import run
 
 BATCH_SIZE = 32
-IMAGE_SIZE = (256, 256)
+IMAGE_SIZE = (128, 128)
 CLASS_NAMES = ['incorrect', 'correct']
 AUTOTUNE = tf.data.AUTOTUNE
 REGULARIZATION_LAMBDA = 0.000025
@@ -36,7 +36,7 @@ def get_bytes_label(filepath, label):
 def process_image(raw_bytes, label):
     image = tf.io.decode_png(raw_bytes, channels=3)
     image = tf.image.convert_image_dtype(image, dtype=tf.float32)
-    image = tf.image.resize(image, (256, 256)) # needed in order to have correct shape otherwise it gets None shape in training
+    image = tf.image.resize(image, (128, 128)) # needed in order to have correct shape otherwise it gets None shape in training
     
     return image, label
 
