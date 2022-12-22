@@ -3,6 +3,7 @@ import os
 import tensorflow as tf
 from subprocess import run
 
+# Global parameters
 BATCH_SIZE = 32
 IMAGE_SIZE = (128, 128)
 CLASS_NAMES = ['incorrect', 'correct']
@@ -18,16 +19,19 @@ filepath = tf.io.gfile.glob(FILENAMES)
 NUM_TOTAL_IMAGES = len(filepath)
 
 def assign_label(label_map: dict, filepath: list) -> dict:
-    labels = dict()
+  """
+  Creates a dict with labels for training.
+  """
+  labels = dict()
 
-    for i in range(len(filepath)):
-        label = filepath[i].split('/')[-2]
-        if label not in list(label_map.keys()):
-            raise NotImplementedError(f'Label {label} not included in label map')
-        
-        labels.update({filepath[i]:label_map[label]})
+  for i in range(len(filepath)):
+    label = filepath[i].split('/')[-2]
+    if label not in list(label_map.keys()):
+      raise NotImplementedError(f'Label {label} not included in label map')
+      
+    labels.update({filepath[i]:label_map[label]})
 
-    return labels
+  return labels
 
 def get_bytes_label(filepath, label):
     raw_bytes = tf.io.read_file(filepath)
