@@ -9,13 +9,14 @@ IMAGE_SIZE = (128, 128)
 CLASS_NAMES = ['incorrect', 'correct']
 AUTOTUNE = tf.data.AUTOTUNE
 REGULARIZATION_LAMBDA = 0.000025
-FILENAMES = "gs://mom_seguros_images_car/ic/train/train/*/*.png"
-MAIN_FIELPATH = "gs://mom_seguros_images_car/ic/train/train/*"
+FILENAMES = "gs://mom_seguros_poc/images/ic/train/*/*.png"
+FILENAMES_VAL = "gs://mom_seguros_poc/images/ic/validation/*/*.png"
 
 output_directory = os.environ['AIP_MODEL_DIR']
 
 # List all files in bucket
 filepath = tf.io.gfile.glob(FILENAMES)
+filepath_val = tf.io.gfile.glob(FILENAMES_VAL)
 NUM_TOTAL_IMAGES = len(filepath)
 
 def assign_label(label_map: dict, filepath: list) -> dict:
@@ -44,9 +45,10 @@ def process_image(raw_bytes, label):
     
     return image, label
 
-def build_dataset(dataset, batch_size=BATCH_SIZE, cache=False):
+def build_dataset(dataset, batch_size=BATCH_SIZE, cache=False, shuffle=True):
     
-    dataset = dataset.shuffle(NUM_TOTAL_IMAGES)
+    if shuffle:
+      dataset = dataset.shuffle(NUM_TOTAL_IMAGES)
     
     # Extraction: IO Intensive
     dataset = dataset.map(get_bytes_label, num_parallel_calls=AUTOTUNE)
@@ -74,17 +76,23 @@ logging.info('Images pipeline starting')
 logging.info('Creating dataset with gcs paths')
 label_map = {'correct': 1, 'incorrect': 0}
 dataset = assign_label(label_map, filepath)
+val_dataset = assign_label(label_map, filepath_val)
 dataset = [[k,v] for k,v in dataset.items()]
+val_dataset = [[k,v] for k,v in val_dataset.items()]
 
 features = [i[0] for i in dataset]
 labels = [i[1] for i in dataset]
+val_features = [i[0] for i in val_dataset]
+val_labels = [i[1] for i in val_dataset]
 
 # Create Dataset from Features and Labels
 dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+val_dataset = tf.data.Dataset.from_tensor_slices((val_features, val_labels))
 
 logging.info(f'Creating datasets for training')
 # Apply transformations to the dataset with images paths and labels
 train_ds = build_dataset(dataset)
+val_ds = build_dataset(val_dataset, shuffle=False)
 
 # data augmentation layer
 data_augmentation = tf.keras.Sequential([
@@ -111,7 +119,7 @@ model.fit(
   train_ds,
   epochs=5,
   verbose=1,
-  # validation_data=val_ds,
+  validation_data=val_ds,
 )
 
 # model save
