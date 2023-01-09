@@ -102,9 +102,46 @@ data_augmentation = tf.keras.Sequential([
 
 # create and compile the model
 logging.info('Creating and compiling the model')
+# callbacks
+class AccReached(tf.keras.callbacks.Callback):
+  def __init__(self):
+    pass
+  def on_epoch_end(self, epoch, logs={}):
+    if(logs.get('accuracy') > 0.999):
+      print("\nReached 99% accuracy so cancelling training!")
+      self.model.stop_training = True
+
+def scheduler(epoch, lr):
+  if epoch < 10:
+    return lr
+  elif lr <= 0.003:
+    return lr * tf.math.exp(-0.01)
+  else:
+    return lr * tf.math.exp(-0.1)
+
+lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
+
 model = tf.keras.Sequential([
   data_augmentation,
+  tf.keras.layers.Rescaling(1./255, input_shape=(256, 256, 3)),
+  tf.keras.layers.Conv2D(32, (4,4), activation='relu'),
+  tf.keras.layers.MaxPooling2D(2,2),
+  tf.keras.layers.Conv2D(32, (4,4), activation='relu'),
+  tf.keras.layers.MaxPooling2D(2,2),
+  tf.keras.layers.Conv2D(64, (4,4), activation='relu'),
+  tf.keras.layers.MaxPooling2D(2,2),
   tf.keras.layers.Flatten(),
+  tf.keras.layers.Dense(2048, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(1024, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
+  tf.keras.layers.Dense(512, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
   tf.keras.layers.Dense(64, activation='relu', activity_regularizer=tf.keras.regularizers.l2(REGULARIZATION_LAMBDA)),
   tf.keras.layers.Dense(1, activation='sigmoid')
 ])
@@ -119,6 +156,7 @@ model.fit(
   train_ds,
   epochs=5,
   verbose=1,
+  callbacks=[lr_callback, AccReached()],
   validation_data=val_ds,
 )
 
