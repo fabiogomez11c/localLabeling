@@ -16,7 +16,7 @@ def request_test(x):
 
   return result
 
-result = list(map(request_test, list(range(1000))))
+result = list(map(request_test, list(range(5000))))
 result = pd.DataFrame(result)
 
 print(result.info())
